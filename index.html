@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<title>Inicio de Seccion</title>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    
+    
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background:url("fondo.jpg") ;
+            background-color: black;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        
+
+        .container {
+            padding: 16px;
+            background-color: white;
+        }
+
+     
+
+        input[type=text],
+        input[type=password] {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0 22px 0;
+            display: list-block;
+            border: none;
+            background: #f1f1f1;
+        }
+
+        input[type=text]:focus,
+        input[type=password]:focus {
+            background-color: #ddd;
+            outline: none;
+        }
+
+        
+
+        hr {
+            border: 1px solid #f1f1f1;
+            margin-bottom: 25px;
+        }
+
+        
+
+        .registerbtn {
+            background-color: #04AA6D;
+            color: white;
+            padding: 16px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 50%;
+            opacity: 0.9;
+        }
+
+        .registerbtn:hover {
+            opacity: 1;
+        }
+
+        
+
+        a {
+            color: dodgerblue;
+        }
+
+       
+
+        .signin {
+            background-color: #f1f1f1;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<form>
+    <div class="container">
+        <h1>Inicio de sesion y Registro</h1>
+        <p>Inicie de sesion si no tiene una cuenta se le creara automaticamente</p>
+        <hr>
+
+        <label for="email"><b>Correo Electronico </b></label>
+        <input type="text" placeholder="Correo" name="email" id="email" class="form-control" required>
+
+        <label><b>Contraseña</b></label>
+        <input type="password" placeholder="Contraseña" name="psw" id="psw" class="form-control" required>
+
+        <hr>
+        
+
+        <button type="button" id="submitData" name="submitData" class="btn btn-primary">Iniciar seccion o registrarte</button>
+    </div>
+
+    
+</form>
+
+</body>
+</html>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import {getDatabase, set, ref, update} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAN0Rbfk3XjR-_cGsyv1t0R6SSG0rUiJ-o",
+  authDomain: "segundoparcial-61e04.firebaseapp.com",
+  databaseURL: "https://segundoparcial-61e04-default-rtdb.firebaseio.com",
+  projectId: "segundoparcial-61e04",
+  storageBucket: "segundoparcial-61e04.appspot.com",
+  messagingSenderId: "651472670154",
+  appId: "1:651472670154:web:9348f9aeeaaf76bb3f9333"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const database = getDatabase(app);
+
+    submitData.addEventListener('click', (e) => {
+
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('psw').value;
+
+        //Registro
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Inicio de Seccion
+                const user = userCredential.user;
+                // Usiario ID
+                set(ref(database, 'users/' + user.uid), {
+                    email: email,
+                    password: password
+                })
+                    .then(() => {
+                        // Datos salvados creado correctamente
+                        Swal.fire({
+  position: 'top-center',
+  icon: 'success',
+  title: 'Se creo correctamente el usuario',
+  showConfirmButton: false,
+  timer: 1500
+})
+        
+                    })
+                    .catch((error) => {
+                        // El guardado de los datos del cliente fallo
+                        Swal.fire({
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Se ha producido un error a la hora de crear su cuenta vuelva a intentarlos',
+ 
+})
+                    });
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // ..
+                Swal.fire({
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Correo y contraseña incorrecta o este correo ya esta en uso',
+ 
+})
+            });
+
+        // Inicio de Seccion de Usuario
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Inicio Seccion Correctamente
+                const user = userCredential.user;
+                // ...
+
+                // se guardan los datos de los usuarios en la base de datos real time
+                var lgDate = new Date();
+                update(ref(database, 'users/' + user.uid), {
+                    last_login: lgDate,
+                })
+                    .then(() => {
+                        // Se guardan los datos correctamente
+                        Swal.fire({
+  position: 'top-center',
+  icon: 'success',
+  title: 'Se inicio seccion correctamente',
+  showConfirmButton: false,
+  timer: 1500
+
+})
+ location.href="crud.html";
+
+                    })
+                    .catch((error) => {
+                        // El inicio de Seccion fallo 
+                        Swal.fire({
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Se ha producido un error a la hora de iniciar a su cuenta vuelva a intentarlos',
+ 
+})
+                    });
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                Swal.fire({
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Se ha producido un error a la hora de iniciar a su cuenta vuelva a intentarlos el error es ' + errorMessage,
+ 
+})
+      
+            });
+
+        
+        signOut(auth).then(() => {
+               // El deslogeo fue correcto
+        }).catch((error) => {
+            // Un error paso 
+            Swal.fire({
+  icon: 'error',
+  title: 'Oops...',
+  text: 'Se ha producido un error a la hora de deslogear a su cuenta vuelva a intentarlos  ' ,
+ 
+})
+        });
+    });
+    
+    
+
+</script>
